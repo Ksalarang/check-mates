@@ -3,9 +3,11 @@ using UnityEngine;
 
 namespace GameScene.Models {
 public class Square : MonoBehaviour {
-    public new Transform transform;
-
-    public Piece currentPiece;
+    public bool isLight;
+    
+    [HideInInspector] public new Transform transform;
+    
+    [HideInInspector] public Piece currentPiece;
 
     void Awake() {
         transform = base.transform;

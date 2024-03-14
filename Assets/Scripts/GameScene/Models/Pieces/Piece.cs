@@ -5,7 +5,7 @@ public abstract class Piece : MonoBehaviour {
     public PieceType type;
     public bool isWhite;
 
-    public SpriteRenderer spriteRenderer;
+    [HideInInspector] public SpriteRenderer spriteRenderer;
 
     void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
