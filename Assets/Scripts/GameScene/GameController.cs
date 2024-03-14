@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using GameScene.Controllers;
+using UnityEngine;
 using Utils;
+using Zenject;
 
 namespace GameScene {
 public class GameController : MonoBehaviour {
+    [Inject] BoardController boardController;
     
     Log log;
 
@@ -11,7 +14,7 @@ public class GameController : MonoBehaviour {
     }
 
     void Start() {
-        log.log("start");
+        boardController.createBoard();
     }
 }
 }

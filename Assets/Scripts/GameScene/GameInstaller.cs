@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using GameScene.Controllers;
+using UnityEngine;
 using Zenject;
 
 // ReSharper disable All
@@ -6,15 +7,18 @@ using Zenject;
 namespace GameScene {
 public class GameInstaller : MonoInstaller {
     [Header("Controllers")]
-    [SerializeField] GameController gameController;
+    [SerializeField] GameObject controllers;
     [Header("Misc")]
     [SerializeField] GameSettings gameSettings;
+    [SerializeField] new Camera camera;
 
     public override void InstallBindings() {
         // controllers
-        bind(gameController);
+        bind(controllers.GetComponent<GameController>());
+        bind(controllers.GetComponent<BoardController>());
         // settings
         bind(gameSettings);
+        bind(camera);
     }
     
     void bind<T>(T instance) {
