@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour {
     }
 
     void Start() {
-        boardController.createBoard();
+        
     }
 }
 }

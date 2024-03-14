@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 647139676}
   - component: {fileID: 647139678}
   - component: {fileID: 647139679}
+  - component: {fileID: 647139680}
   m_Layer: 0
   m_Name: Controllers
   m_TagString: Untagged
@@ -441,9 +442,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72128833183743638e4d98d0a6491259, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boardContainer: {fileID: 1983248947}
+  pieceContainer: {fileID: 1516905208}
   lightSquarePrefab: {fileID: 5847052603753717631, guid: d2ad8934af85fa9418dad768b633e991, type: 3}
   darkSquarePrefab: {fileID: 362178387553427500, guid: 726f61306143b204aab39e57dc077c13, type: 3}
-  container: {fileID: 1983248947}
+  piecePrefab: {fileID: 7792168082754995130, guid: 235e6ede15152a04c907d31bdba78637, type: 3}
+--- !u!114 &647139680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 647139675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 538b28207f164e9baa7b145e05c2c90e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  whitePawn: {fileID: 21300000, guid: fffa74794bd6af04e81bd78fa2c5523e, type: 3}
+  whiteKnight: {fileID: 21300000, guid: 98461181cb22562429a5aaba846b9a70, type: 3}
+  whiteBishop: {fileID: 21300000, guid: 251ecbf16e813d5459eb94e992376165, type: 3}
+  whiteRook: {fileID: 21300000, guid: 462c19b35209a3a4bad8193dfff2989e, type: 3}
+  whiteQueen: {fileID: 21300000, guid: 0958d6d8b4aca2e449e7f0bf11e9c6fd, type: 3}
+  whiteKing: {fileID: 21300000, guid: ddf253fd748fabf4f81885ceafb40853, type: 3}
+  blackPawn: {fileID: 21300000, guid: 57e5521b2f8cbd14c9797e10d2a860e9, type: 3}
+  blackKnight: {fileID: 21300000, guid: 94046d40976d27b4fb097b9132cc8a06, type: 3}
+  blackBishop: {fileID: 21300000, guid: d40a19a3bd3447c4c89ebd527bc6c64f, type: 3}
+  blackRook: {fileID: 21300000, guid: 83c8ecbc16f7c27428a4b356e916fd28, type: 3}
+  blackQueen: {fileID: 21300000, guid: 344144097d8aaf746a4ce28c35733cea, type: 3}
+  blackKing: {fileID: 21300000, guid: 9a223652fb1a63343a47d07fe712f0fc, type: 3}
+--- !u!1 &1516905207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1516905208}
+  m_Layer: 0
+  m_Name: Pieces
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1516905208
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516905207}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1983248946
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,3 +542,4 @@ SceneRoots:
   - {fileID: 40873398}
   - {fileID: 519420032}
   - {fileID: 1983248947}
+  - {fileID: 1516905208}
