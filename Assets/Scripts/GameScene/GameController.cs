@@ -6,6 +6,7 @@ using Zenject;
 namespace GameScene {
 public class GameController : MonoBehaviour {
     [Inject] BoardController boardController;
+    [Inject] PieceController pieceController;
     
     Log log;
 
@@ -14,7 +15,8 @@ public class GameController : MonoBehaviour {
     }
 
     void Start() {
-        
+        boardController.createBoard();
+        pieceController.createPieces();
     }
 }
 }

@@ -17,6 +17,7 @@ public class GameInstaller : MonoInstaller {
         bind(controllers.GetComponent<GameController>());
         bind(controllers.GetComponent<BoardController>());
         bind(controllers.GetComponent<PieceSpriteProvider>());
+        bind(controllers.GetComponent<PieceController>());
         // settings
         bind(gameSettings);
         bind(camera);
