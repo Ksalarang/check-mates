@@ -15,11 +15,14 @@ public class GameInstaller : MonoInstaller {
     public override void InstallBindings() {
         // controllers
         bind(controllers.GetComponent<GameController>());
-        bind(controllers.GetComponent<BoardController>());
+        bindWithInterfaces(controllers.GetComponent<BoardController>());
         bind(controllers.GetComponent<PieceSpriteProvider>());
         bind(controllers.GetComponent<PieceController>());
+        bind(controllers.GetComponent<SessionController>());
         // settings
         bind(gameSettings);
+        bind(gameSettings.log);
+        // misc
         bind(camera);
     }
     
@@ -29,6 +32,10 @@ public class GameInstaller : MonoInstaller {
 
     void bind<T>(T instance, object id) {
         Container.Bind<T>().WithId(id).FromInstance(instance);
+    }
+    
+    void bindWithInterfaces<T>(T instance) {
+        Container.BindInterfacesAndSelfTo<T>().FromInstance(instance);
     }
 }
 }

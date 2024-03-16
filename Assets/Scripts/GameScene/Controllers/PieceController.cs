@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using GameScene.Models.Pieces;
 using UnityEngine;
 using Zenject;
@@ -12,6 +14,14 @@ public class PieceController : MonoBehaviour {
     [Inject] DiContainer diContainer;
     [Inject] PieceSpriteProvider pieceSpriteProvider;
     [Inject] BoardController boardController;
+
+    public List<Piece> whitePieces;
+    public List<Piece> blackPieces;
+
+    void Awake() {
+        whitePieces = new List<Piece>();
+        blackPieces = new List<Piece>();
+    }
 
     public void createPieces() {
         createPieceSet(true, true);
@@ -34,13 +44,16 @@ public class PieceController : MonoBehaviour {
 
     T createPiece<T>(bool white, int index = -1) where T : Piece {
         var pieceObject = diContainer.InstantiatePrefab(piecePrefab, pieceContainer);
-        var piece = pieceObject.AddComponent<T>();
+        var piece = diContainer.InstantiateComponent<T>(pieceObject);
         piece.type = getPieceType<T>();
         piece.isWhite = white;
         piece.spriteRenderer.sprite = pieceSpriteProvider.getSprite(piece.type, white);
         var scale = boardController.getSquareLength();
         piece.transform.localScale = new Vector3(scale, scale);
         piece.name = getPieceName(piece, index);
+
+        var list = white ? whitePieces : blackPieces;
+        list.Add(piece);
         return piece;
     }
 
@@ -67,7 +80,7 @@ public class PieceController : MonoBehaviour {
     }
 
     string getPieceName(Piece piece, int index) {
-        var color = piece.isWhite ? "white" : "black";
+        var color = piece.isWhite ? "w" : "b";
         var pieceName = $"{color}_{piece.type.ToString().ToLower()}";
         if (index > -1) {
             pieceName += $"_{index}";

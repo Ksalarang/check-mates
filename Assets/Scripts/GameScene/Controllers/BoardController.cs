@@ -1,11 +1,13 @@
-﻿using GameScene.Models;
+﻿using System;
+using GameScene.Models.BoardModel;
 using UnityEngine;
 using Utils.Extensions;
 using Zenject;
 
 namespace GameScene.Controllers {
-public class BoardController : MonoBehaviour {
+public class BoardController : MonoBehaviour, Board {
     public const int BoardSize = 8;
+    public event OnSquareClick squareClick;
     
     [Header("Prefabs")]
     [SerializeField] Transform boardContainer;
@@ -18,6 +20,7 @@ public class BoardController : MonoBehaviour {
     readonly Square[,] squareArray = new Square[BoardSize, BoardSize];
     float squareLength;
 
+    #region Board creation
     public void createBoard() {
         var cameraSize = camera.getSize();
         var boardLength = Mathf.Min(cameraSize.x, cameraSize.y);
@@ -37,16 +40,35 @@ public class BoardController : MonoBehaviour {
                     firstSquarePosition.x + x * squareLength,
                     firstSquarePosition.y + y * squareLength
                 );
+                square.onClick = onSquareClick;
+                square.indices = new Vector2Int(x, y);
                 
                 squareArray[y, x] = square;
             }
         }
     }
 
-    public Square getSquare(Vector2Int position) => getSquare(position.x, position.y);
-    
-    public Square getSquare(int x, int y) => squareArray[y, x];
+    void onSquareClick(Square square) {
+        squareClick?.Invoke(square);
+    }
+    #endregion
+
+    public Square getSquare(Vector2Int indices) => getSquare(indices.x, indices.y);
+
+    public Square getSquare(int x, int y) {
+        if (x is < 0 or >= BoardSize || y is < 0 or >= BoardSize) return null;
+        return squareArray[y, x];
+    }
+
+    public Square getSquareRelativeToOrigin(Vector2Int origin, Vector2Int direction, int steps) {
+        if (getSquare(origin) is null) {
+            throw new ArgumentException($"no square exists at {origin}");
+        }
+        return getSquare(origin + direction * steps);
+    }
 
     public float getSquareLength() => squareLength;
 }
+
+public delegate void OnSquareClick(Square square);
 }
