@@ -32,6 +32,11 @@ public class Square : MonoBehaviour, IPointerClickHandler {
         return true;
     }
 
+    public void removePiece() {
+        currentPiece.currentSquare = null;
+        currentPiece = null;
+    }
+
     public bool hasPiece() => currentPiece is not null;
 
     public void setOutlineVisible(bool visible) {
@@ -39,9 +44,9 @@ public class Square : MonoBehaviour, IPointerClickHandler {
     }
 
     public override string ToString() {
-        var color = isLight ? "l" : "d";
-        var piece = currentPiece is not null ? $", {currentPiece.name}" : "";
-        return $"{color}_square {indices}{piece}";
+        var color = isLight ? "w" : "b";
+        var piece = currentPiece is not null ? $"_with_{currentPiece}" : "";
+        return $"{color}_square_{indices}{piece}";
     }
 }
 }

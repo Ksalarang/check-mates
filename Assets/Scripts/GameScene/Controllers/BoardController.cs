@@ -42,6 +42,7 @@ public class BoardController : MonoBehaviour, Board {
                 );
                 square.onClick = onSquareClick;
                 square.indices = new Vector2Int(x, y);
+                square.name = square.ToString();
                 
                 squareArray[y, x] = square;
             }

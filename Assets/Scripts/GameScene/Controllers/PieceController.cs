@@ -50,7 +50,8 @@ public class PieceController : MonoBehaviour {
         piece.spriteRenderer.sprite = pieceSpriteProvider.getSprite(piece.type, white);
         var scale = boardController.getSquareLength();
         piece.transform.localScale = new Vector3(scale, scale);
-        piece.name = getPieceName(piece, index);
+        piece.index = index;
+        piece.name = piece.ToString();
 
         var list = white ? whitePieces : blackPieces;
         list.Add(piece);
@@ -77,15 +78,6 @@ public class PieceController : MonoBehaviour {
             return PieceType.King;
         }
         throw new InvalidEnumArgumentException($"type {nameof(T)} is not recognized");
-    }
-
-    string getPieceName(Piece piece, int index) {
-        var color = piece.isWhite ? "w" : "b";
-        var pieceName = $"{color}_{piece.type.ToString().ToLower()}";
-        if (index > -1) {
-            pieceName += $"_{index}";
-        }
-        return pieceName;
     }
 
     Vector2Int getOppositePosition(Vector2Int position) {

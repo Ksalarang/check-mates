@@ -9,6 +9,7 @@ public abstract class Piece : MonoBehaviour {
     public PieceType type;
     public bool isWhite;
     public bool isBottom;
+    public int index;
     public Square currentSquare;
 
     [HideInInspector] public SpriteRenderer spriteRenderer;
@@ -44,6 +45,15 @@ public abstract class Piece : MonoBehaviour {
             _ => throw new ArgumentOutOfRangeException(nameof(relative), relative, null)
         };
         return isBottom ? absolute : -absolute;
+    }
+
+    public override string ToString() {
+        var color = isWhite ? "w" : "b";
+        var result = $"{color}_{type.ToString().ToLower()}";
+        if (index > -1) {
+            result += $"_{index}";
+        }
+        return result;
     }
 }
 

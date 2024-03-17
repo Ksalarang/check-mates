@@ -31,17 +31,30 @@ public class SessionController : MonoBehaviour {
     }
     #endregion
 
-    void onSquareClick(Square square) {
-        log.log($"click {square}");
-        if (selectedPiece == null) {
-            if (square.currentPiece is not null && currentPlayer.isWhite == square.currentPiece.isWhite) {
-                onPieceSelected(square);
+    void onSquareClick(Square clickedSquare) {
+        log.log($"clicked {clickedSquare}");
+        
+        if (selectedPiece is null) { // a piece is not selected yet
+            if (clickedSquare.currentPiece is not null) { // clicked square has a piece
+                if (currentPlayer.isWhite == clickedSquare.currentPiece.isWhite) { // clicked piece belongs to current player
+                    onPieceSelected(clickedSquare);
+                }
             }
-        } else {
-            if (square.currentPiece is not null && currentPlayer.isWhite == square.currentPiece.isWhite) {
-                onPieceSelected(square);
-            } else {
-                // move the selected piece to the selected square
+        } else { // a piece is already selected
+            if (clickedSquare.currentPiece is not null) { // clicked square has a piece
+                if (currentPlayer.isWhite == clickedSquare.currentPiece.isWhite) { // clicked piece belongs to current player
+                    onPieceSelected(clickedSquare);
+                } else { // clicked piece belongs to opponent
+                    if (availableSquares.Contains(clickedSquare)) {
+                        onPieceCaptured(clickedSquare);
+                        onTurnEnded();
+                    }
+                }
+            } else { // clicked piece is empty
+                if (availableSquares.Contains(clickedSquare)) {
+                    onPieceMoved(clickedSquare);
+                    onTurnEnded();
+                }
             }
         }
     }
@@ -49,17 +62,49 @@ public class SessionController : MonoBehaviour {
     void onPieceSelected(Square square) {
         selectedPiece = square.currentPiece;
         
-        setAvailableSquaresVisible(false);
-        availableSquares.Clear();
+        clearAvailableSquares();
         availableSquares = selectedPiece.getAvailableSquares();
         setAvailableSquaresVisible(true);
         log.log($"onPieceSelected: available square count: {availableSquares.Count}");
     }
 
+    void onPieceMoved(Square square) {
+        log.log($"{selectedPiece} is moved to {square}");
+        movePieceToSquare(selectedPiece, square);
+    }
+
+    void onPieceCaptured(Square square) {
+        log.log($"{selectedPiece} captured {square.currentPiece}");
+        capturePieceAtSquare(square);
+        movePieceToSquare(selectedPiece, square);
+    }
+
+    void onTurnEnded() {
+        log.log($"{currentPlayer}'s turn ended");
+        clearAvailableSquares();
+        currentPlayer = currentPlayer == playerOne ? playerTwo : playerOne;
+        log.log($"{currentPlayer} is current");
+    }
+
+    void clearAvailableSquares() {
+        setAvailableSquaresVisible(false);
+        availableSquares.Clear();
+    }
+    
     void setAvailableSquaresVisible(bool visible) {
         foreach (var square in availableSquares) {
             square.setOutlineVisible(visible);
         }
+    }
+
+    void movePieceToSquare(Piece piece, Square square) {
+        piece.currentSquare.removePiece();
+        square.tryPlacingPiece(piece);
+    }
+
+    void capturePieceAtSquare(Square square) {
+        square.currentPiece.gameObject.SetActive(false);
+        square.removePiece();
     }
 
     public void startNewSession() {

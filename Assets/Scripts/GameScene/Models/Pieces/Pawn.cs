@@ -21,6 +21,7 @@ public class Pawn : Piece {
             }
         }
         // capture squares
+        //todo: exclude the king
         var forwardLeftSquare = canCapturePiece(getAbsoluteDirection(PieceDirection.ForwardLeft));
         if (forwardLeftSquare is not null) {
             list.Add(forwardLeftSquare);
