@@ -6,8 +6,10 @@ using UnityEngine.EventSystems;
 namespace GameScene.Models.BoardModel {
 public class Square : MonoBehaviour, IPointerClickHandler {
     [SerializeField] public bool isLight;
-    [SerializeField] SpriteRenderer outline;
-    
+    [SerializeField] Color availableSquareColor;
+    [SerializeField] Color selectedSquareColor;
+    [SerializeField] SpriteRenderer selectionRenderer;
+
     [HideInInspector] public new Transform transform;
     
     [HideInInspector] public Piece currentPiece;
@@ -39,8 +41,14 @@ public class Square : MonoBehaviour, IPointerClickHandler {
 
     public bool hasPiece() => currentPiece is not null;
 
-    public void setOutlineVisible(bool visible) {
-        outline.gameObject.SetActive(visible);
+    public void setSquareAvailable(bool available) {
+        selectionRenderer.color = availableSquareColor;
+        selectionRenderer.gameObject.SetActive(available);
+    }
+
+    public void setSquareSelected(bool selected) {
+        selectionRenderer.color = selectedSquareColor;
+        selectionRenderer.gameObject.SetActive(selected);
     }
 
     public override string ToString() {

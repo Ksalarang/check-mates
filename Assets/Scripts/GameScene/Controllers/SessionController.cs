@@ -8,8 +8,6 @@ using Zenject;
 
 namespace GameScene.Controllers {
 public class SessionController : MonoBehaviour {
-    public Player currentPlayer;
-
     [Inject] BoardController board;
     [Inject] LogSettings logSettings;
     [Inject] PieceController pieceController;
@@ -17,6 +15,7 @@ public class SessionController : MonoBehaviour {
     Log log;
     Player playerOne;
     Player playerTwo;
+    Player currentPlayer;
     Piece selectedPiece;
     List<Square> availableSquares;
 
@@ -60,22 +59,28 @@ public class SessionController : MonoBehaviour {
     }
 
     void onPieceSelected(Square square) {
+        // ReSharper disable once Unity.NoNullPropagation
+        selectedPiece?.currentSquare.setSquareSelected(false);
         selectedPiece = square.currentPiece;
+        selectedPiece.currentSquare.setSquareSelected(true);
         
         clearAvailableSquares();
         availableSquares = selectedPiece.getAvailableSquares();
         setAvailableSquaresVisible(true);
-        log.log($"onPieceSelected: available square count: {availableSquares.Count}");
+        
+        log.log($"{selectedPiece} is selected, available squares: {availableSquares.Count}");
     }
 
     void onPieceMoved(Square square) {
         log.log($"{selectedPiece} is moved to {square}");
+        selectedPiece.currentSquare.setSquareSelected(false);
         movePieceToSquare(selectedPiece, square);
     }
 
     void onPieceCaptured(Square square) {
         log.log($"{selectedPiece} captured {square.currentPiece}");
         capturePieceAtSquare(square);
+        selectedPiece.currentSquare.setSquareSelected(false);
         movePieceToSquare(selectedPiece, square);
     }
 
@@ -93,7 +98,7 @@ public class SessionController : MonoBehaviour {
     
     void setAvailableSquaresVisible(bool visible) {
         foreach (var square in availableSquares) {
-            square.setOutlineVisible(visible);
+            square.setSquareAvailable(visible);
         }
     }
 
