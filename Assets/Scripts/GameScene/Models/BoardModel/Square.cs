@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace GameScene.Models.BoardModel {
 public class Square : MonoBehaviour, IPointerClickHandler {
-    [SerializeField] public bool isLight;
+    [SerializeField] public bool isWhite;
     [SerializeField] Color availableSquareColor;
     [SerializeField] Color selectedSquareColor;
     [SerializeField] SpriteRenderer selectionRenderer;
@@ -52,9 +52,7 @@ public class Square : MonoBehaviour, IPointerClickHandler {
     }
 
     public override string ToString() {
-        var color = isLight ? "w" : "b";
-        var piece = currentPiece is not null ? $"_with_{currentPiece}" : "";
-        return $"{color}_square_{indices}{piece}";
+        return $@"{isWhite switch { true => "w", false => "b" }}_square{indices}";
     }
 }
 }

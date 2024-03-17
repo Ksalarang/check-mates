@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using GameScene.Models;
 using GameScene.Models.BoardModel;
 using GameScene.Models.Pieces;
+using GameScene.Models.SessionModel;
 using UnityEngine;
 using Utils;
 using Zenject;
 
 namespace GameScene.Controllers {
-public class SessionController : MonoBehaviour {
+public class SessionController : MonoBehaviour, Session {
     [Inject] BoardController board;
     [Inject] LogSettings logSettings;
     [Inject] PieceController pieceController;
@@ -17,21 +19,29 @@ public class SessionController : MonoBehaviour {
     Player playerTwo;
     Player currentPlayer;
     Piece selectedPiece;
+    Turn currentTurn;
+    
     List<Square> availableSquares;
+    List<Turn> turns;
 
     #region Awake
     void Awake() {
         log = new Log(GetType(), logSettings.sessionController);
         playerOne = new Player();
         playerTwo = new Player();
+        
         availableSquares = new List<Square>();
+        turns = new List<Turn>();
         
         board.squareClick += onSquareClick;
     }
     #endregion
 
     void onSquareClick(Square clickedSquare) {
-        log.log($"clicked {clickedSquare}");
+        log.log($@"clicked {clickedSquare}{clickedSquare.hasPiece() switch {
+                true => $" with {clickedSquare.currentPiece}",
+                false => "" }
+        }");
         
         if (selectedPiece is null) { // a piece is not selected yet
             if (clickedSquare.currentPiece is not null) { // clicked square has a piece
@@ -45,12 +55,14 @@ public class SessionController : MonoBehaviour {
                     onPieceSelected(clickedSquare);
                 } else { // clicked piece belongs to opponent
                     if (availableSquares.Contains(clickedSquare)) {
+                        beforeTurnEnd();
                         onPieceCaptured(clickedSquare);
                         onTurnEnded();
                     }
                 }
             } else { // clicked piece is empty
                 if (availableSquares.Contains(clickedSquare)) {
+                    beforeTurnEnd();
                     onPieceMoved(clickedSquare);
                     onTurnEnded();
                 }
@@ -73,22 +85,33 @@ public class SessionController : MonoBehaviour {
 
     void onPieceMoved(Square square) {
         log.log($"{selectedPiece} is moved to {square}");
-        selectedPiece.currentSquare.setSquareSelected(false);
         movePieceToSquare(selectedPiece, square);
     }
 
     void onPieceCaptured(Square square) {
-        log.log($"{selectedPiece} captured {square.currentPiece}");
+        log.log($"{selectedPiece} captured {square.currentPiece} on {square}");
+        currentTurn.capturedPiece = square.currentPiece;
         capturePieceAtSquare(square);
-        selectedPiece.currentSquare.setSquareSelected(false);
         movePieceToSquare(selectedPiece, square);
     }
 
+    void beforeTurnEnd() {
+        selectedPiece.currentSquare.setSquareSelected(false);
+        
+        currentTurn.piece = selectedPiece;
+        currentTurn.startSquare = selectedPiece.currentSquare;
+    }
+
     void onTurnEnded() {
-        log.log($"{currentPlayer}'s turn ended");
         clearAvailableSquares();
+        
+        currentTurn.endSquare = selectedPiece.currentSquare;
+        currentTurn.determineType();
+        turns.Add(currentTurn);
+        log.log(currentTurn);
+        currentTurn = new Turn(turns.Count + 1);
+        
         currentPlayer = currentPlayer == playerOne ? playerTwo : playerOne;
-        log.log($"{currentPlayer} is current");
     }
 
     void clearAvailableSquares() {
@@ -120,6 +143,8 @@ public class SessionController : MonoBehaviour {
         setPiecesSides(isPlayerOneWhite);
 
         currentPlayer = isPlayerOneWhite ? playerOne : playerTwo;
+        turns.Clear();
+        currentTurn = new Turn(1);
     }
 
     void setPiecesSides(bool isWhiteBottom) {
@@ -130,5 +155,9 @@ public class SessionController : MonoBehaviour {
             piece.isBottom = !isWhiteBottom;
         }
     }
+
+    #region Session interface
+    public Turn getLastTurn() => turns.LastOrDefault();
+    #endregion
 }
 }

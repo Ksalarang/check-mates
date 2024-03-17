@@ -110,7 +110,7 @@ public class PieceController : MonoBehaviour {
     void createQueen(bool white, bool bottom) {
         var queen = createPiece<Queen>(white);
         var position = Vector2Int.zero;
-        if (boardController.getSquare(3, bottom ? 0 : getOppositeIndex(0)).isLight) {
+        if (boardController.getSquare(3, bottom ? 0 : getOppositeIndex(0)).isWhite) {
             position.x = white ? 3 : 4;
         } else {
             position.x = white ? 4 : 3;
@@ -125,7 +125,7 @@ public class PieceController : MonoBehaviour {
     void createKing(bool white, bool bottom) {
         var king = createPiece<King>(white);
         var position = Vector2Int.zero;
-        if (boardController.getSquare(3, bottom ? 0 : getOppositeIndex(0)).isLight) {
+        if (boardController.getSquare(3, bottom ? 0 : getOppositeIndex(0)).isWhite) {
             position.x = white ? 4 : 3;
         } else {
             position.x = white ? 3 : 4;
