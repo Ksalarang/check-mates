@@ -6,9 +6,7 @@ public class Rook : Piece {
     List<PieceDirection> directions;
 
     protected override void awake() {
-        directions = new List<PieceDirection> {
-            PieceDirection.Forward, PieceDirection.Right, PieceDirection.Backward, PieceDirection.Left
-        };
+        directions = PieceDirectionExt.getStraightDirections();
     }
 
     public override List<Square> getAvailableSquares() {
