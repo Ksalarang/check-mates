@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameScene.Models.BoardModel;
+using GameScene.Models.SessionModel;
 using UnityEngine;
 using Zenject;
 
@@ -17,6 +18,7 @@ public abstract class Piece : MonoBehaviour {
     public Vector2Int position => currentSquare.indices;
 
     [Inject] protected Board board;
+    [Inject] protected Session session;
 
     void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -32,7 +34,11 @@ public abstract class Piece : MonoBehaviour {
         return true;
     }
 
-    protected Vector2Int getAbsoluteDirection(PieceDirection relative) {
+    public Square getSquareInDirection(PieceDirection direction, int steps = 1) {
+        return board.getSquare(position + getRelativeDirection(direction) * steps);
+    }
+
+    public Vector2Int getRelativeDirection(PieceDirection relative) {
         var absolute = relative switch {
             PieceDirection.Forward => BoardDirection.Up,
             PieceDirection.ForwardRight => BoardDirection.UpRight,
@@ -45,6 +51,10 @@ public abstract class Piece : MonoBehaviour {
             _ => throw new ArgumentOutOfRangeException(nameof(relative), relative, null)
         };
         return isBottom ? absolute : -absolute;
+    }
+    
+    protected int getRelativeIndex(int i) {
+        return isBottom ? i : Board.getOppositeIndex(i);
     }
 
     public override string ToString() {
@@ -64,16 +74,5 @@ public enum PieceType {
     Rook,
     Queen,
     King
-}
-
-public enum PieceDirection {
-    Forward,
-    ForwardRight,
-    Right,
-    BackwardRight,
-    Backward,
-    BackwardLeft,
-    Left,
-    ForwardLeft
 }
 }

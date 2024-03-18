@@ -63,6 +63,7 @@ public class SessionController : MonoBehaviour, Session {
             } else { // clicked piece is empty
                 if (availableSquares.Contains(clickedSquare)) {
                     beforeTurnEnd();
+                    checkEnPassantCapture(clickedSquare);
                     onPieceMoved(clickedSquare);
                     onTurnEnded();
                 }
@@ -91,7 +92,7 @@ public class SessionController : MonoBehaviour, Session {
     void onPieceCaptured(Square square) {
         log.log($"{selectedPiece} captured {square.currentPiece} on {square}");
         currentTurn.capturedPiece = square.currentPiece;
-        capturePieceAtSquare(square);
+        capturePiece(square.currentPiece);
         movePieceToSquare(selectedPiece, square);
     }
 
@@ -130,9 +131,26 @@ public class SessionController : MonoBehaviour, Session {
         square.tryPlacingPiece(piece);
     }
 
-    void capturePieceAtSquare(Square square) {
-        square.currentPiece.gameObject.SetActive(false);
-        square.removePiece();
+    void capturePiece(Piece piece) {
+        piece.gameObject.SetActive(false);
+        piece.currentSquare.removePiece();
+    }
+
+    void checkEnPassantCapture(Square endSquare) {
+        if (selectedPiece.type == PieceType.Pawn
+            && selectedPiece.position.x != endSquare.indices.x
+            && !endSquare.hasPiece()) {
+            
+            currentTurn.capturedPiece = getEnPassantPiece(selectedPiece, endSquare);
+            currentTurn.type = Turn.Type.EnPassantCapture;
+            capturePiece(currentTurn.capturedPiece);
+        }
+    }
+
+    Piece getEnPassantPiece(Piece chargingPiece, Square endSquare) {
+        var direction = endSquare.indices.x < chargingPiece.position.x ? PieceDirection.Left : PieceDirection.Right;
+        if (!chargingPiece.isBottom) direction = direction.getOpposite();
+        return chargingPiece.getSquareInDirection(direction).currentPiece;
     }
 
     public void startNewSession() {

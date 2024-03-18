@@ -16,9 +16,9 @@ public class GameInstaller : MonoInstaller {
         // controllers
         bind(controllers.GetComponent<GameController>());
         bindWithInterfaces(controllers.GetComponent<BoardController>());
+        bindWithInterfaces(controllers.GetComponent<SessionController>());
         bind(controllers.GetComponent<PieceSpriteProvider>());
         bind(controllers.GetComponent<PieceController>());
-        bind(controllers.GetComponent<SessionController>());
         // settings
         bind(gameSettings);
         bind(gameSettings.log);

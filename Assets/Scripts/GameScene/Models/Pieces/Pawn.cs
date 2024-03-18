@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GameScene.Controllers;
 using GameScene.Models.BoardModel;
 using UnityEngine;
 
@@ -7,14 +6,14 @@ namespace GameScene.Models.Pieces {
 public class Pawn : Piece {
     public override List<Square> getAvailableSquares() {
         var list = new List<Square>();
-        var forward = getAbsoluteDirection(PieceDirection.Forward);
+        var forward = getRelativeDirection(PieceDirection.Forward);
         
         // 1 step forward square
         if (isPathClear(forward, 1)) {
             list.Add(board.getSquare(position + forward));
         }
         // 2 steps forward square
-        var startY = isBottom ? 1 : Board.getOppositeIndex(1);
+        var startY = getRelativeIndex(1);
         if (position.y == startY) {
             if (isPathClear(forward, 2)) {
                 list.Add(board.getSquare(position + forward * 2));
@@ -22,23 +21,38 @@ public class Pawn : Piece {
         }
         // capture squares
         //todo: exclude the king
-        var forwardLeftSquare = canCapturePiece(getAbsoluteDirection(PieceDirection.ForwardLeft));
+        var forwardLeftSquare = canCapturePiece(getRelativeDirection(PieceDirection.ForwardLeft));
         if (forwardLeftSquare is not null) {
             list.Add(forwardLeftSquare);
         }
-        var forwardRightSquare = canCapturePiece(getAbsoluteDirection(PieceDirection.ForwardRight));
+        var forwardRightSquare = canCapturePiece(getRelativeDirection(PieceDirection.ForwardRight));
         if (forwardRightSquare is not null) {
             list.Add(forwardRightSquare);
         }
         
         //todo: en passant capture squares
-        
+        var enPassantRow = getRelativeIndex(4);
+        if (position.y == enPassantRow) {
+            var leftSquare = getSquareInDirection(PieceDirection.Left);
+            if (leftSquare is not null && isEnPassant(leftSquare)) {
+                list.Add(getSquareInDirection(PieceDirection.ForwardLeft));
+            }
+            var rightSquare = getSquareInDirection(PieceDirection.Right);
+            if (rightSquare is not null && isEnPassant(rightSquare)) {
+                list.Add(getSquareInDirection(PieceDirection.ForwardRight));
+            }
+        }
         return list;
     }
 
     Square canCapturePiece(Vector2Int direction) {
         var square = board.getSquare(position + direction);
         return square is not null && square.hasPiece() && isWhite != square.currentPiece.isWhite ? square : null;
+    }
+
+    bool isEnPassant(Square square) {
+        var lastTurn = session.getLastTurn();
+        return square.indices.x == lastTurn.endSquare.indices.x && lastTurn.isEnPassant();
     }
 }
 }
