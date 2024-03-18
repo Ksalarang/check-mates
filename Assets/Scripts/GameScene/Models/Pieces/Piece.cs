@@ -41,6 +41,27 @@ public abstract class Piece : MonoBehaviour {
 
     public abstract List<Square> getAvailableSquares();
 
+    protected List<Square> getAvailableSquaresInDirections(List<PieceDirection> directions) {
+        var list = new List<Square>();
+        foreach (var direction in directions) {
+            var square = getSquareInDirection(direction, 1);
+            for (var step = 2; square is not null; square = getSquareInDirection(direction, step++)) {
+                if (!square.hasPiece()) {
+                    list.Add(square);
+                } else {
+                    if (isSameSide(square.currentPiece)) {
+                        break;
+                    }
+                    if (square.currentPiece.type != PieceType.King) {
+                        list.Add(square);
+                    }
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+
     public Square getSquareInDirection(PieceDirection direction, int steps = 1) {
         return board.getSquare(position + getRelativeDirection(direction) * steps);
     }
