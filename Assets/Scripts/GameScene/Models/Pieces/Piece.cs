@@ -22,9 +22,10 @@ public abstract class Piece : MonoBehaviour {
 
     void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        awake();
     }
-    
-    public abstract List<Square> getAvailableSquares();
+
+    protected virtual void awake() {}
 
     protected bool isPathClear(Vector2Int direction, int steps) {
         for (var i = 1; i <= steps; i++) {
@@ -33,6 +34,12 @@ public abstract class Piece : MonoBehaviour {
         }
         return true;
     }
+
+    protected int getRelativeIndex(int i) {
+        return isBottom ? i : Board.getOppositeIndex(i);
+    }
+
+    public abstract List<Square> getAvailableSquares();
 
     public Square getSquareInDirection(PieceDirection direction, int steps = 1) {
         return board.getSquare(position + getRelativeDirection(direction) * steps);
@@ -52,10 +59,8 @@ public abstract class Piece : MonoBehaviour {
         };
         return isBottom ? absolute : -absolute;
     }
-    
-    protected int getRelativeIndex(int i) {
-        return isBottom ? i : Board.getOppositeIndex(i);
-    }
+
+    public bool isSameSide(Piece other) => isWhite == other.isWhite;
 
     public override string ToString() {
         var color = isWhite ? "w" : "b";
