@@ -20,17 +20,16 @@ public class Pawn : Piece {
             }
         }
         // capture squares
-        //todo: exclude the king
-        var forwardLeftSquare = canCapturePiece(getRelativeDirection(PieceDirection.ForwardLeft));
+        //todo: exclude squares that expose own king
+        var forwardLeftSquare = getSquareForCapture(getRelativeDirection(PieceDirection.ForwardLeft));
         if (forwardLeftSquare is not null) {
             list.Add(forwardLeftSquare);
         }
-        var forwardRightSquare = canCapturePiece(getRelativeDirection(PieceDirection.ForwardRight));
+        var forwardRightSquare = getSquareForCapture(getRelativeDirection(PieceDirection.ForwardRight));
         if (forwardRightSquare is not null) {
             list.Add(forwardRightSquare);
         }
-        
-        //todo: en passant capture squares
+        // en passant capture squares
         var enPassantRow = getRelativeIndex(4);
         if (position.y == enPassantRow) {
             var leftSquare = getSquareInDirection(PieceDirection.Left);
@@ -45,9 +44,14 @@ public class Pawn : Piece {
         return list;
     }
 
-    Square canCapturePiece(Vector2Int direction) {
+    Square getSquareForCapture(Vector2Int direction) {
         var square = board.getSquare(position + direction);
-        return square is not null && square.hasPiece() && isWhite != square.currentPiece.isWhite ? square : null;
+        return square is not null 
+               && square.hasPiece() 
+               && isWhite != square.currentPiece.isWhite
+               && square.currentPiece.type != PieceType.King
+            ? square
+            : null;
     }
 
     bool isEnPassant(Square square) {
