@@ -14,6 +14,8 @@ public class SessionController : MonoBehaviour, Session {
     [Inject] LogSettings logSettings;
     [Inject] PieceController pieceController;
 
+    public event OnPawnPromotion onPawnPromotion;
+    
     Log log;
     Player playerOne;
     Player playerTwo;
@@ -44,13 +46,13 @@ public class SessionController : MonoBehaviour, Session {
         }");
         
         if (selectedPiece is null) { // a piece is not selected yet
-            if (clickedSquare.currentPiece is not null) { // clicked square has a piece
+            if (clickedSquare.hasPiece()) { // clicked square has a piece
                 if (currentPlayer.isWhite == clickedSquare.currentPiece.isWhite) { // clicked piece belongs to current player
                     onPieceSelected(clickedSquare);
                 }
             }
         } else { // a piece is already selected
-            if (clickedSquare.currentPiece is not null) { // clicked square has a piece
+            if (clickedSquare.hasPiece()) { // clicked square has a piece
                 if (currentPlayer.isWhite == clickedSquare.currentPiece.isWhite) { // clicked piece belongs to current player
                     onPieceSelected(clickedSquare);
                 } else { // clicked piece belongs to opponent
@@ -104,6 +106,7 @@ public class SessionController : MonoBehaviour, Session {
     }
 
     void onTurnEnded() {
+        checkPawnPromotion();
         clearAvailableSquares();
         
         currentTurn.endSquare = selectedPiece.currentSquare;
@@ -153,6 +156,15 @@ public class SessionController : MonoBehaviour, Session {
         return chargingPiece.getSquareInDirection(direction).currentPiece;
     }
 
+    void checkPawnPromotion() {
+        if (selectedPiece.type == PieceType.Pawn
+            && selectedPiece.currentSquare.indices.y == selectedPiece.getRelativeIndex(7)) {
+            
+            onPawnPromotion?.Invoke(selectedPiece.isWhite);
+        }
+    }
+
+    #region Interface
     public void startNewSession() {
         var isPlayerOneWhite = true;
         playerOne.isWhite = isPlayerOneWhite;
@@ -164,6 +176,11 @@ public class SessionController : MonoBehaviour, Session {
         turns.Clear();
         currentTurn = new Turn(1);
     }
+
+    public void onPromotedPieceSelected(PieceType type) {
+        log.log($"{selectedPiece} promoted to {type}");
+    }
+    #endregion
 
     void setPiecesSides(bool isWhiteBottom) {
         foreach (var piece in pieceController.whitePieces) {
@@ -178,4 +195,6 @@ public class SessionController : MonoBehaviour, Session {
     public Turn getLastTurn() => turns.LastOrDefault();
     #endregion
 }
+
+public delegate void OnPawnPromotion(bool isWhite);
 }

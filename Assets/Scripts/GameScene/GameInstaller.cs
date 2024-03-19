@@ -1,4 +1,5 @@
 ﻿using GameScene.Controllers;
+using GameScene.UI;
 using UnityEngine;
 using Zenject;
 
@@ -8,6 +9,8 @@ namespace GameScene {
 public class GameInstaller : MonoInstaller {
     [Header("Controllers")]
     [SerializeField] GameObject controllers;
+    [Header("UI")]
+    [SerializeField] PromotionPanel promotionPanel;
     [Header("Misc")]
     [SerializeField] GameSettings gameSettings;
     [SerializeField] new Camera camera;
@@ -19,6 +22,8 @@ public class GameInstaller : MonoInstaller {
         bindWithInterfaces(controllers.GetComponent<SessionController>());
         bind(controllers.GetComponent<PieceSpriteProvider>());
         bind(controllers.GetComponent<PieceController>());
+        // ui
+        bind(promotionPanel);
         // settings
         bind(gameSettings);
         bind(gameSettings.log);

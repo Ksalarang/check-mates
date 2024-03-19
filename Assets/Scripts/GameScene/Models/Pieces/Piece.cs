@@ -35,12 +35,6 @@ public abstract class Piece : MonoBehaviour {
         return true;
     }
 
-    protected int getRelativeIndex(int i) {
-        return isBottom ? i : Board.getOppositeIndex(i);
-    }
-
-    public abstract List<Square> getAvailableSquares();
-
     protected List<Square> getAvailableSquaresInDirections(List<PieceDirection> directions) {
         var list = new List<Square>();
         foreach (var direction in directions) {
@@ -61,6 +55,12 @@ public abstract class Piece : MonoBehaviour {
         }
         return list;
     }
+
+    public int getRelativeIndex(int i) {
+        return isBottom ? i : Board.getOppositeIndex(i);
+    }
+
+    public abstract List<Square> getAvailableSquares();
 
     public Square getSquareInDirection(PieceDirection direction, int steps = 1) {
         return board.getSquare(position + getRelativeDirection(direction) * steps);
