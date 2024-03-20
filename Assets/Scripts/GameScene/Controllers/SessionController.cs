@@ -39,6 +39,7 @@ public class SessionController : MonoBehaviour, Session {
     }
     #endregion
 
+    #region Turns
     void onSquareClick(Square clickedSquare) {
         log.log($@"clicked {clickedSquare}{clickedSquare.hasPiece() switch {
                 true => $" with {clickedSquare.currentPiece}",
@@ -106,7 +107,14 @@ public class SessionController : MonoBehaviour, Session {
     }
 
     void onTurnEnded() {
-        checkPawnPromotion();
+        if (!isPawnPromoted()) {
+            afterTurnEnded();
+        } else {
+            onPawnPromotion?.Invoke(selectedPiece.isWhite);
+        }
+    }
+
+    void afterTurnEnded() {
         clearAvailableSquares();
         
         currentTurn.endSquare = selectedPiece.currentSquare;
@@ -135,10 +143,16 @@ public class SessionController : MonoBehaviour, Session {
     }
 
     void capturePiece(Piece piece) {
+        removePieceFromPlayer(piece);
         piece.gameObject.SetActive(false);
         piece.currentSquare.removePiece();
     }
 
+    Player getPlayer(Piece piece) {
+        return playerOne.isWhite == piece.isWhite ? playerOne : playerTwo;
+    }
+
+    #region En Passant Check
     void checkEnPassantCapture(Square endSquare) {
         if (selectedPiece.type == PieceType.Pawn
             && selectedPiece.position.x != endSquare.indices.x
@@ -155,32 +169,57 @@ public class SessionController : MonoBehaviour, Session {
         if (!chargingPiece.isBottom) direction = direction.getOpposite();
         return chargingPiece.getSquareInDirection(direction).currentPiece;
     }
+    #endregion
 
-    void checkPawnPromotion() {
-        if (selectedPiece.type == PieceType.Pawn
-            && selectedPiece.currentSquare.indices.y == selectedPiece.getRelativeIndex(7)) {
-            
-            onPawnPromotion?.Invoke(selectedPiece.isWhite);
-        }
+    #region Pawn promotion
+    bool isPawnPromoted() {
+        return selectedPiece.type == PieceType.Pawn
+               && selectedPiece.currentSquare.indices.y == selectedPiece.getRelativeIndex(7);
     }
+    
+    public void onPromotedPieceSelected(PieceType type) {
+        log.log($"{selectedPiece} promoted to {type}");
+
+        var newPiece = pieceController.createPiece(type, selectedPiece.isWhite, selectedPiece.isBottom);
+        var square = selectedPiece.currentSquare;
+        selectedPiece.currentSquare.removePiece();
+        square.tryPlacingPiece(newPiece);
+        
+        addPieceToPlayer(newPiece);
+        removePieceFromPlayer(selectedPiece);
+        selectedPiece.gameObject.SetActive(false);
+        selectedPiece = newPiece;
+        
+        afterTurnEnded();
+    }
+    #endregion
+
+    void addPieceToPlayer(Piece piece) {
+        getPlayer(piece).pieces.Add(piece);
+    }
+    
+    void removePieceFromPlayer(Piece piece) {
+        getPlayer(piece).pieces.Remove(piece);
+    }
+    #endregion
 
     #region Interface
+    #region Session
     public void startNewSession() {
         var isPlayerOneWhite = true;
         playerOne.isWhite = isPlayerOneWhite;
         playerTwo.isWhite = !isPlayerOneWhite;
-        
         setPiecesSides(isPlayerOneWhite);
+        
+        playerOne.pieces.Clear();
+        playerOne.pieces.AddRange(pieceController.getPieces(playerOne.isWhite));
+        playerTwo.pieces.Clear();
+        playerTwo.pieces.AddRange(pieceController.getPieces(playerTwo.isWhite));
 
         currentPlayer = isPlayerOneWhite ? playerOne : playerTwo;
         turns.Clear();
         currentTurn = new Turn(1);
     }
-
-    public void onPromotedPieceSelected(PieceType type) {
-        log.log($"{selectedPiece} promoted to {type}");
-    }
-    #endregion
 
     void setPiecesSides(bool isWhiteBottom) {
         foreach (var piece in pieceController.whitePieces) {
@@ -190,6 +229,8 @@ public class SessionController : MonoBehaviour, Session {
             piece.isBottom = !isWhiteBottom;
         }
     }
+    #endregion
+    #endregion
 
     #region Session interface
     public Turn getLastTurn() => turns.LastOrDefault();

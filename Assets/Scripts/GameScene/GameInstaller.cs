@@ -11,6 +11,7 @@ public class GameInstaller : MonoInstaller {
     [SerializeField] GameObject controllers;
     [Header("UI")]
     [SerializeField] PromotionPanel promotionPanel;
+    [SerializeField] ClickBlocker clickBlocker;
     [Header("Misc")]
     [SerializeField] GameSettings gameSettings;
     [SerializeField] new Camera camera;
@@ -24,6 +25,7 @@ public class GameInstaller : MonoInstaller {
         bind(controllers.GetComponent<PieceController>());
         // ui
         bind(promotionPanel);
+        bind(clickBlocker);
         // settings
         bind(gameSettings);
         bind(gameSettings.log);

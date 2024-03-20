@@ -16,6 +16,7 @@ public class PromotionPanel : MonoBehaviour {
 
     [Inject] SessionController sessionController;
     [Inject] PieceSpriteProvider spriteProvider;
+    [Inject] ClickBlocker clickBlocker;
 
     List<Image> pieces;
 
@@ -23,11 +24,11 @@ public class PromotionPanel : MonoBehaviour {
         pieces = new List<Image> { queenImage, rookImage, knightImage, bishopImage };
         sessionController.onPawnPromotion += onPawnPromotion;
         addClickListeners();
-        setVisible(false);
+        gameObject.SetActive(false);
     }
 
     void onPawnPromotion(bool white) {
-        setVisible(true);
+        show();
         foreach (var piece in pieces) {
             piece.sprite = spriteProvider.getSprite(getPieceType(piece), white);
         }
@@ -42,12 +43,18 @@ public class PromotionPanel : MonoBehaviour {
     void addClickListener(Image image) {
         image.GetComponent<ClickListener>().onClick = () => {
             sessionController.onPromotedPieceSelected(getPieceType(image));
-            setVisible(false);
+            hide();
         };
     }
 
-    void setVisible(bool visible) {
-        gameObject.SetActive(visible);
+    void show() {
+        gameObject.SetActive(true);
+        clickBlocker.show();
+    }
+
+    void hide() {
+        gameObject.SetActive(false);
+        clickBlocker.hide();
     }
 
     PieceType getPieceType(Image image) {

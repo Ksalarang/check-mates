@@ -23,9 +23,17 @@ public class PieceController : MonoBehaviour {
         blackPieces = new List<Piece>();
     }
 
+    #region Pieces creation
     public void createPieces() {
         createPieceSet(true, true);
         createPieceSet(false, false);
+    }
+
+    public Piece createPiece(PieceType type, bool white, bool bottom) {
+        var piece = createPiece(type, white);
+        piece.isBottom = bottom;
+        getPieces(white).Add(piece);
+        return piece;
     }
 
     void createPieceSet(bool white, bool bottom) {
@@ -56,6 +64,18 @@ public class PieceController : MonoBehaviour {
         var list = white ? whitePieces : blackPieces;
         list.Add(piece);
         return piece;
+    }
+
+    Piece createPiece(PieceType type, bool white) {
+        return type switch {
+            PieceType.Pawn => createPiece<Pawn>(white),
+            PieceType.Knight => createPiece<Knight>(white),
+            PieceType.Bishop => createPiece<Bishop>(white),
+            PieceType.Rook => createPiece<Rook>(white),
+            PieceType.Queen => createPiece<Queen>(white),
+            PieceType.King => createPiece<King>(white),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 
     PieceType getPieceType<T>() where T : Piece {
@@ -136,5 +156,8 @@ public class PieceController : MonoBehaviour {
         var square = boardController.getSquare(position);
         square.tryPlacingPiece(king);
     }
+    #endregion
+
+    public List<Piece> getPieces(bool white) => white ? whitePieces : blackPieces;
 }
 }
