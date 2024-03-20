@@ -126,17 +126,6 @@ public class SessionController : MonoBehaviour, Session {
         currentPlayer = currentPlayer == playerOne ? playerTwo : playerOne;
     }
 
-    void clearAvailableSquares() {
-        setAvailableSquaresVisible(false);
-        availableSquares.Clear();
-    }
-    
-    void setAvailableSquaresVisible(bool visible) {
-        foreach (var square in availableSquares) {
-            square.setSquareAvailable(visible);
-        }
-    }
-
     void movePieceToSquare(Piece piece, Square square) {
         piece.currentSquare.removePiece();
         square.tryPlacingPiece(piece);
@@ -146,10 +135,6 @@ public class SessionController : MonoBehaviour, Session {
         removePieceFromPlayer(piece);
         piece.gameObject.SetActive(false);
         piece.currentSquare.removePiece();
-    }
-
-    Player getPlayer(Piece piece) {
-        return playerOne.isWhite == piece.isWhite ? playerOne : playerTwo;
     }
 
     #region En Passant Check
@@ -193,17 +178,8 @@ public class SessionController : MonoBehaviour, Session {
         afterTurnEnded();
     }
     #endregion
-
-    void addPieceToPlayer(Piece piece) {
-        getPlayer(piece).pieces.Add(piece);
-    }
-    
-    void removePieceFromPlayer(Piece piece) {
-        getPlayer(piece).pieces.Remove(piece);
-    }
     #endregion
 
-    #region Interface
     #region Session
     public void startNewSession() {
         var isPlayerOneWhite = true;
@@ -230,10 +206,34 @@ public class SessionController : MonoBehaviour, Session {
         }
     }
     #endregion
-    #endregion
 
     #region Session interface
     public Turn getLastTurn() => turns.LastOrDefault();
+    #endregion
+
+    #region Helpers
+    void clearAvailableSquares() {
+        setAvailableSquaresVisible(false);
+        availableSquares.Clear();
+    }
+    
+    void setAvailableSquaresVisible(bool visible) {
+        foreach (var square in availableSquares) {
+            square.setSquareAvailable(visible);
+        }
+    }
+    
+    void addPieceToPlayer(Piece piece) {
+        getPlayer(piece).pieces.Add(piece);
+    }
+    
+    void removePieceFromPlayer(Piece piece) {
+        getPlayer(piece).pieces.Remove(piece);
+    }
+    
+    Player getPlayer(Piece piece) {
+        return playerOne.isWhite == piece.isWhite ? playerOne : playerTwo;
+    }
     #endregion
 }
 
