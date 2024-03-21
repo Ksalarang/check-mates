@@ -18,7 +18,6 @@ public class Knight : Piece {
 
     public override List<Square> getAvailableSquares() {
         var list = new List<Square>();
-
         var i = 0;
         foreach (var direction in directions) {
             var squarePosition = position + getRelativeDirection(direction) * 2;
@@ -32,7 +31,7 @@ public class Knight : Piece {
                 }
             }
         }
-        
+        checkAbsolutePin(list);
         return list;
     }
 }

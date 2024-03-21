@@ -10,7 +10,9 @@ public class Queen : Piece {
     }
 
     public override List<Square> getAvailableSquares() {
-        return getAvailableSquaresInDirections(directions);
+        var list = getAvailableSquaresInDirections(directions);
+        checkAbsolutePin(list);
+        return list;
     }
 }
 }

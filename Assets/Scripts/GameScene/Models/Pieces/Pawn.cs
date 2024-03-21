@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using GameScene.Models.BoardModel;
 using UnityEngine;
+using Utils;
 
 namespace GameScene.Models.Pieces {
 public class Pawn : Piece {
@@ -41,6 +42,7 @@ public class Pawn : Piece {
                 list.Add(getSquareInDirection(PieceDirection.ForwardRight));
             }
         }
+        checkAbsolutePin(list);
         return list;
     }
 

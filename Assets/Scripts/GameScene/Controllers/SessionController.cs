@@ -209,6 +209,10 @@ public class SessionController : MonoBehaviour, Session {
 
     #region Session interface
     public Turn getLastTurn() => turns.LastOrDefault();
+
+    public King getKing(bool white) {
+        return getPlayer(white).getKing();
+    }
     #endregion
 
     #region Helpers
@@ -233,6 +237,10 @@ public class SessionController : MonoBehaviour, Session {
     
     Player getPlayer(Piece piece) {
         return playerOne.isWhite == piece.isWhite ? playerOne : playerTwo;
+    }
+
+    Player getPlayer(bool white) {
+        return playerOne.isWhite == white ? playerOne : playerTwo;
     }
     #endregion
 }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using GameScene.Models.BoardModel;
 using GameScene.Models.SessionModel;
+using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 using Zenject;
 
 namespace GameScene.Models.Pieces {
@@ -26,6 +28,8 @@ public abstract class Piece : MonoBehaviour {
     }
 
     protected virtual void awake() {}
+    
+    public abstract List<Square> getAvailableSquares();
 
     protected bool isPathClear(Vector2Int direction, int steps) {
         for (var i = 1; i <= steps; i++) {
@@ -56,11 +60,116 @@ public abstract class Piece : MonoBehaviour {
         return list;
     }
 
+    protected void checkAbsolutePin(List<Square> availableSquares) {
+        if (isAbsolutePinned(out var pinningPiece)) {
+            if (getDirectionTo(pinningPiece, out var dirVector)) {
+                var list = new List<Square>();
+                for (var step = 1; step <= Board.Size; step++) {
+                    var nextSquare = getSquareInDirection(vectorToDirection(dirVector), step);
+                    list.Add(nextSquare);
+                    if (nextSquare.currentPiece == pinningPiece) break;
+                }
+                dirVector = -dirVector;
+                var king = session.getKing(isWhite);
+                for (var step = 1; step <= Board.Size; step++) {
+                    var nextSquare = getSquareInDirection(vectorToDirection(dirVector), step);
+                    if (nextSquare.currentPiece == king) break;
+                    list.Add(nextSquare);
+                }
+                availableSquares.RemoveAll(s => !list.Contains(s));
+            }
+        }
+    }
+
+    bool isAbsolutePinned(out Piece pinningPiece) {
+        var king = session.getKing(isWhite);
+        if (hasClearPathTo(king)) {
+            if (getDirectionTo(king, out var dirVector)) {
+                dirVector = -dirVector;
+                if (isOpponentPieceOnPath(vectorToDirection(dirVector), out var enemyPiece)) {
+                    if (isDirectionDiagonal(dirVector)) {
+                        if (enemyPiece.type is PieceType.Queen or PieceType.Bishop) {
+                            pinningPiece = enemyPiece;
+                            return true;
+                        }
+                        pinningPiece = null;
+                        return false;
+                    }
+                    if (enemyPiece.type is PieceType.Queen or PieceType.Rook) {
+                        pinningPiece = enemyPiece;
+                        return true;
+                    }
+                    pinningPiece = null;
+                    return false;
+                }
+            }
+        }
+        pinningPiece = null;
+        return false;
+    }
+
+    bool hasClearPathTo(Piece piece) {
+        if (getDirectionTo(piece, out var direction)) {
+            for (var step = 1; step <= Board.Size; step++) {
+                var nextSquare = getSquareInDirection(vectorToDirection(direction), step);
+                if (nextSquare.hasPiece()) {
+                    return nextSquare.currentPiece == piece;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool getDirectionTo(Piece piece, out Vector2Int normalizedDirection) {
+        if (sharesSameLineWith(piece)) {
+            var direction = piece.position - position;
+            if (isDirectionDiagonal(direction)) {
+                normalizedDirection = direction / Mathf.Abs(direction.x);
+                return true;
+            }
+            var scalar = direction.x == 0 ? Mathf.Abs(direction.y) : Mathf.Abs(direction.x);
+            normalizedDirection = direction / scalar;
+            return true;
+        }
+        normalizedDirection = Vector2Int.zero;
+        return false;
+    }
+
+    bool sharesSameLineWith(Piece piece) {
+        if (position.x == piece.position.x || position.y == piece.position.y) return true;
+        var direction = piece.position - position;
+        return isDirectionDiagonal(direction);
+    }
+
+    bool isOpponentPieceOnPath(PieceDirection direction, out Piece opponent) {
+        for (var step = 1; step <= Board.Size; step++) {
+            var nextSquare = getSquareInDirection(direction, step);
+            if (nextSquare is null) {
+                opponent = null;
+                return false;
+            }
+            if (nextSquare.hasPiece()) {
+                if (isSameSide(nextSquare.currentPiece)) {
+                    opponent = null;
+                    return false;
+                }
+                if (nextSquare.currentPiece.type is PieceType.Bishop or PieceType.Rook or PieceType.Queen) {
+                    opponent = nextSquare.currentPiece;
+                    return true;
+                }
+                opponent = null;
+                return false;
+            }
+        }
+        opponent = null;
+        return false;
+    }
+
+    bool isDirectionDiagonal(Vector2Int direction) => Mathf.Abs(direction.x) == Mathf.Abs(direction.y);
+
     public int getRelativeIndex(int i) {
         return isBottom ? i : Board.getOppositeIndex(i);
     }
-
-    public abstract List<Square> getAvailableSquares();
 
     public Square getSquareInDirection(PieceDirection direction, int steps = 1) {
         return board.getSquare(position + getRelativeDirection(direction) * steps);
@@ -79,6 +188,30 @@ public abstract class Piece : MonoBehaviour {
             _ => throw new ArgumentOutOfRangeException(nameof(relative), relative, null)
         };
         return isBottom ? absolute : -absolute;
+    }
+
+    public PieceDirection vectorToDirection(Vector2Int vector) {
+        PieceDirection direction;
+        if (vector == BoardDirection.Up) {
+            direction = PieceDirection.Forward;
+        } else if (vector == BoardDirection.UpRight) {
+            direction = PieceDirection.ForwardRight;
+        } else if (vector == BoardDirection.Right) {
+            direction = PieceDirection.Right;
+        } else if (vector == BoardDirection.DownRight) {
+            direction = PieceDirection.BackwardRight;
+        } else if (vector == BoardDirection.Down) {
+            direction = PieceDirection.Backward;
+        } else if (vector == BoardDirection.DownLeft) {
+            direction = PieceDirection.BackwardLeft;
+        } else if (vector == BoardDirection.Left) {
+            direction = PieceDirection.Left;
+        } else if (vector == BoardDirection.UpLeft) {
+            direction = PieceDirection.ForwardLeft;
+        } else {
+            throw new ArgumentException($"vector {vector} is invalid to cast to PieceDirection");
+        }
+        return isBottom ? direction : direction.getOpposite();
     }
 
     public bool isSameSide(Piece other) => isWhite == other.isWhite;
@@ -100,5 +233,9 @@ public enum PieceType {
     Rook,
     Queen,
     King
+}
+
+public enum BoardLine {
+    Vertical, Horizontal, Diagonal
 }
 }
