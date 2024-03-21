@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using GameScene.Models.BoardModel;
 using GameScene.Models.SessionModel;
-using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 using Zenject;
 
 namespace GameScene.Models.Pieces {
@@ -22,23 +20,15 @@ public abstract class Piece : MonoBehaviour {
     [Inject] protected Board board;
     [Inject] protected Session session;
 
+    #region Awake
     void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
         awake();
     }
 
     protected virtual void awake() {}
+    #endregion
     
-    public abstract List<Square> getAvailableSquares();
-
-    protected bool isPathClear(Vector2Int direction, int steps) {
-        for (var i = 1; i <= steps; i++) {
-            var nextSquare = board.getSquare(position + direction * i);
-            if (nextSquare is null || nextSquare.hasPiece()) return false;
-        }
-        return true;
-    }
-
     protected List<Square> getAvailableSquaresInDirections(List<PieceDirection> directions) {
         var list = new List<Square>();
         foreach (var direction in directions) {
@@ -60,6 +50,7 @@ public abstract class Piece : MonoBehaviour {
         return list;
     }
 
+    #region Absolute pin
     protected void checkAbsolutePin(List<Square> availableSquares) {
         if (isAbsolutePinned(out var pinningPiece)) {
             if (getDirectionTo(pinningPiece, out var dirVector)) {
@@ -87,7 +78,7 @@ public abstract class Piece : MonoBehaviour {
             if (getDirectionTo(king, out var dirVector)) {
                 dirVector = -dirVector;
                 if (isOpponentPieceOnPath(vectorToDirection(dirVector), out var enemyPiece)) {
-                    if (isDirectionDiagonal(dirVector)) {
+                    if (BoardDirection.isDiagonal(dirVector)) {
                         if (enemyPiece.type is PieceType.Queen or PieceType.Bishop) {
                             pinningPiece = enemyPiece;
                             return true;
@@ -107,40 +98,7 @@ public abstract class Piece : MonoBehaviour {
         pinningPiece = null;
         return false;
     }
-
-    bool hasClearPathTo(Piece piece) {
-        if (getDirectionTo(piece, out var direction)) {
-            for (var step = 1; step <= Board.Size; step++) {
-                var nextSquare = getSquareInDirection(vectorToDirection(direction), step);
-                if (nextSquare.hasPiece()) {
-                    return nextSquare.currentPiece == piece;
-                }
-            }
-        }
-        return false;
-    }
-
-    bool getDirectionTo(Piece piece, out Vector2Int normalizedDirection) {
-        if (sharesSameLineWith(piece)) {
-            var direction = piece.position - position;
-            if (isDirectionDiagonal(direction)) {
-                normalizedDirection = direction / Mathf.Abs(direction.x);
-                return true;
-            }
-            var scalar = direction.x == 0 ? Mathf.Abs(direction.y) : Mathf.Abs(direction.x);
-            normalizedDirection = direction / scalar;
-            return true;
-        }
-        normalizedDirection = Vector2Int.zero;
-        return false;
-    }
-
-    bool sharesSameLineWith(Piece piece) {
-        if (position.x == piece.position.x || position.y == piece.position.y) return true;
-        var direction = piece.position - position;
-        return isDirectionDiagonal(direction);
-    }
-
+    
     bool isOpponentPieceOnPath(PieceDirection direction, out Piece opponent) {
         for (var step = 1; step <= Board.Size; step++) {
             var nextSquare = getSquareInDirection(direction, step);
@@ -164,9 +122,11 @@ public abstract class Piece : MonoBehaviour {
         opponent = null;
         return false;
     }
+    #endregion
 
-    bool isDirectionDiagonal(Vector2Int direction) => Mathf.Abs(direction.x) == Mathf.Abs(direction.y);
-
+    #region Interface
+    public abstract List<Square> getAvailableSquares();
+    
     public int getRelativeIndex(int i) {
         return isBottom ? i : Board.getOppositeIndex(i);
     }
@@ -175,7 +135,51 @@ public abstract class Piece : MonoBehaviour {
         return board.getSquare(position + getRelativeDirection(direction) * steps);
     }
 
-    public Vector2Int getRelativeDirection(PieceDirection relative) {
+    public override string ToString() {
+        var color = isWhite ? "w" : "b";
+        var result = $"{color}_{type.ToString().ToLower()}";
+        if (index > -1) {
+            result += $"_{index}";
+        }
+        return result;
+    }
+    #endregion
+
+    #region Helpers
+    bool hasClearPathTo(Piece piece) {
+        if (getDirectionTo(piece, out var direction)) {
+            for (var step = 1; step <= Board.Size; step++) {
+                var nextSquare = getSquareInDirection(vectorToDirection(direction), step);
+                if (nextSquare.hasPiece()) {
+                    return nextSquare.currentPiece == piece;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool sharesSameLineWith(Piece piece) {
+        if (position.x == piece.position.x || position.y == piece.position.y) return true;
+        var direction = piece.position - position;
+        return BoardDirection.isDiagonal(direction);
+    }
+
+    bool getDirectionTo(Piece piece, out Vector2Int normalizedDirection) {
+        if (sharesSameLineWith(piece)) {
+            var direction = piece.position - position;
+            if (BoardDirection.isDiagonal(direction)) {
+                normalizedDirection = direction / Mathf.Abs(direction.x);
+                return true;
+            }
+            var scalar = direction.x == 0 ? Mathf.Abs(direction.y) : Mathf.Abs(direction.x);
+            normalizedDirection = direction / scalar;
+            return true;
+        }
+        normalizedDirection = Vector2Int.zero;
+        return false;
+    }
+    
+    protected Vector2Int getRelativeDirection(PieceDirection relative) {
         var absolute = relative switch {
             PieceDirection.Forward => BoardDirection.Up,
             PieceDirection.ForwardRight => BoardDirection.UpRight,
@@ -190,7 +194,7 @@ public abstract class Piece : MonoBehaviour {
         return isBottom ? absolute : -absolute;
     }
 
-    public PieceDirection vectorToDirection(Vector2Int vector) {
+    PieceDirection vectorToDirection(Vector2Int vector) {
         PieceDirection direction;
         if (vector == BoardDirection.Up) {
             direction = PieceDirection.Forward;
@@ -213,17 +217,9 @@ public abstract class Piece : MonoBehaviour {
         }
         return isBottom ? direction : direction.getOpposite();
     }
-
-    public bool isSameSide(Piece other) => isWhite == other.isWhite;
-
-    public override string ToString() {
-        var color = isWhite ? "w" : "b";
-        var result = $"{color}_{type.ToString().ToLower()}";
-        if (index > -1) {
-            result += $"_{index}";
-        }
-        return result;
-    }
+    
+    protected bool isSameSide(Piece other) => isWhite == other.isWhite;
+    #endregion
 }
 
 public enum PieceType {
@@ -233,9 +229,5 @@ public enum PieceType {
     Rook,
     Queen,
     King
-}
-
-public enum BoardLine {
-    Vertical, Horizontal, Diagonal
 }
 }

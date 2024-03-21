@@ -21,7 +21,6 @@ public class Pawn : Piece {
             }
         }
         // capture squares
-        //todo: exclude squares that expose own king
         var forwardLeftSquare = getSquareForCapture(getRelativeDirection(PieceDirection.ForwardLeft));
         if (forwardLeftSquare is not null) {
             list.Add(forwardLeftSquare);
@@ -44,6 +43,14 @@ public class Pawn : Piece {
         }
         checkAbsolutePin(list);
         return list;
+    }
+
+    bool isPathClear(Vector2Int direction, int steps) {
+        for (var i = 1; i <= steps; i++) {
+            var nextSquare = board.getSquare(position + direction * i);
+            if (nextSquare is null || nextSquare.hasPiece()) return false;
+        }
+        return true;
     }
 
     Square getSquareForCapture(Vector2Int direction) {
